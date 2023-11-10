@@ -1,0 +1,122 @@
+﻿@page "/"
+@using Car_Rental.Business.Classes
+@using Car_Rental.Common.Interfaces
+@using Car_Rental.Common.Enums
+@inject BookingProcessor bp
+
+<PageTitle>Car Rental</PageTitle>
+
+
+<div class="row">
+    <h3>Customers</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>SSN</th>
+                <th>Last name</th>
+                <th>First name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var customer in bp.GetCustomers())
+            {
+                <tr>
+                    <td><b>@customer.SSN</b></td>
+                    <td>@customer.LastName</td>
+                    <td>@customer.FirstName</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<br />
+
+<div class="row">
+    <h3>Vehicles</h3>
+        <table class="table">
+        <thead>
+            <tr>
+                <th>RegNo</th>
+                <th>Make</th>
+                <th>Odometer</th>
+                <th>Cost Km</th>
+                <th>Vehicle Type</th>
+                <th>$ Day</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var vehicle in bp.GetVehicles())
+            {
+                <tr>
+                    <td><b>@vehicle.RegNo</b></td>
+                    <td>@vehicle.Make</td>
+                    <td>@vehicle.Odometer</td>
+                    <td>@vehicle.CostKm</td>
+                    <td>@vehicle.VehicleType</td>
+                    <td>@vehicle.CostPerDay</td>
+                    <td>
+                        <span class="badge bg-@(vehicle.Status == VehicleStatuses.Booked ? "danger" : "black")">
+                            @vehicle.Status.ToString()
+                        </span>
+                     </td>
+                </tr>
+
+            }
+        </tbody>
+        </table>
+</div>
+
+<br />
+
+<div class="row">
+    <h3>Bookings</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>RegNo</th>
+                <th>Customer</th>
+                <th>Km Rented</th>
+                <th>Km Returned</th>
+                <th>Rented</th>
+                <th>Returned</th>
+                <th>Cost</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var booking in bp.GetBookings())
+            {
+                if (booking.ReturnedAt.HasValue)
+                {
+                    var vehicle = bp.GetVehicles().First(v => v.RegNo == booking.RegNo);
+                    var cost = BookingProcessor.GetTotalCost(booking, vehicle);
+                    <tr>
+                        <td><b>@booking.RegNo</b></td>
+                        <td>@booking.Customer</td>
+                        <td>@booking.KmAtRent</td>
+                        <td>@(booking.KmAtReturn.ToString())</td>
+                        <td>@booking.RentedAt.ToString("MM/dd/yyyy")</td>
+                        <td>@booking.ReturnedAt?.ToString("MM/dd/yyyy")</td>
+                        <td>@cost</td>
+                        <td><span class="badge bg-success">Closed</span></td>
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <td><b>@booking.RegNo</b></td>
+                        <td>@booking.Customer</td>
+                        <td>@booking.KmAtRent</td>
+                        <td></td>
+                        <td>@booking.RentedAt.ToString("MM/dd/yyyy")</td>
+                        <td></td>
+                        <td></td>
+                        <td><span class="badge bg-danger">Open</span></td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
